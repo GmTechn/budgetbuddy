@@ -1,4 +1,6 @@
 import 'package:expenses_tracker/models/transactionmodel.dart';
+import 'package:expenses_tracker/models/usermodel.dart';
+import 'package:expenses_tracker/pages/overviewpage.dart';
 import 'package:expenses_tracker/providers/balanceprovider.dart';
 import 'package:expenses_tracker/providers/notificationprovider.dart';
 import 'package:flutter/cupertino.dart';
@@ -31,6 +33,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
         'https://w7.pngwing.com/pngs/589/546/png-transparent-apple-logo-new-york-city-brand-computer-apple-company-computer-logo.png',
     'Direct Deposit':
         'https://www.shutterstock.com/image-vector/building-vector-icon-column-bank-600nw-1930635143.jpg',
+    'Disney Plus':
+        "https://newswave25.com/wp-content/uploads/2024/08/%EB%94%94%EC%A6%88%EB%8B%88.jpg",
+    'DoorDash':
+        "https://www.shutterstock.com/image-vector/kerala-india-09082023-doordash-food-600nw-2344891519.jpg",
     'Facebook':
         'https://www.citypng.com/public/uploads/preview/round-blue-circle-contains-f-letter-facebook-logo-701751695134712lb9coc4kea.png',
     'Google':
@@ -42,6 +48,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
     'Interact': 'https://download.logo.wine/logo/Interac/Interac-Logo.wine.png',
     'Loblaws':
         'https://cdn.freebiesupply.com/logos/large/2x/loblaws-logo-png-transparent.png',
+    'Lyft':
+        "https://play-lh.googleusercontent.com/DSChqzPVvt0F4mGutfwuZNtcpmBIJCYlr-erQ3g41rsNfJkeMYQExxTXB7Wi9MQCOFw",
     'Microsoft':
         'https://static.vecteezy.com/system/resources/previews/014/018/578/non_2x/microsoft-logo-on-transparent-background-free-vector.jpg',
     'MoneyGram':
@@ -57,6 +65,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
     'TikTok': 'https://purepng.com/public/uploads/large/tik-tok-logo-6fh.png',
     'Twitter':
         'https://upload.wikimedia.org/wikipedia/commons/7/71/Twitter_Logo_Blue_%282%29.png',
+    'Uber': "https://images.icon-icons.com/2407/PNG/512/uber_icon_146079.png",
+    'Uber Eats':
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT7cTyrYHxcrxLMmPD76qfLDvG7HNMDEEbJQ&s",
     'Walmart':
         'https://www.per-accurate.com/wp-content/uploads/2023/08/walmart-logo-24.jpg',
     'Wise':
@@ -64,14 +75,30 @@ class _TransactionsPageState extends State<TransactionsPage> {
     'Zara': 'https://logos-world.net/wp-content/uploads/2020/05/Zara-Logo.png',
   };
 
+  //liste of brands
   List<String> get sortedBrands => brandLogos.keys.toList()..sort();
+
+  //appuser instance
+  AppUser? _currentUser;
 
   @override
   void initState() {
     super.initState();
+    _loadUsers();
     _loadTransactions();
   }
 
+  //loading users
+  Future<void> _loadUsers() async {
+    final _user = await dbManager.getUserByEmail(widget.email);
+    if (mounted) {
+      setState(() {
+        _currentUser = _user;
+      });
+    }
+  }
+
+  //loading transactions
   Future<void> _loadTransactions() async {
     final data = await dbManager.getTransactions(widget.email);
     data.sort((a, b) => b.date.compareTo(a.date));
@@ -166,7 +193,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       prefixIcon: const Icon(CupertinoIcons.tag),
                       prefixIconColor: Colors.white,
                       hintText: 'Select Brand',
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: const TextStyle(color: Colors.white),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                           color: Color.fromARGB(255, 40, 43, 50),
@@ -213,7 +240,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       prefixIcon: const Icon(CupertinoIcons.arrow_2_circlepath),
                       prefixIconColor: Colors.white,
                       hintText: 'Select type',
-                      hintStyle: const TextStyle(color: Colors.white54),
+                      hintStyle: const TextStyle(color: Colors.white),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                             color: Color.fromARGB(255, 40, 43, 50)),
@@ -369,14 +396,14 @@ class _TransactionsPageState extends State<TransactionsPage> {
         actions: [
           IconButton(
               onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(
-                //     builder: (context) => ChartsPage(
-                //       selectedDate: DateTime.now(),
-                //     ),
-                //   ),
-                // );
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChartsPage(
+                      email: widget.email,
+                    ),
+                  ),
+                );
               },
               icon: const Icon(
                 CupertinoIcons.right_chevron,
