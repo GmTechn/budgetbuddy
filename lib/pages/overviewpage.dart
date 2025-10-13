@@ -158,7 +158,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                             show: true,
                             drawHorizontalLine: true,
                             getDrawingHorizontalLine: (value) {
-                              return FlLine(
+                              return const FlLine(
                                   color: Colors.white10, strokeWidth: 1);
                             }),
                         borderData: FlBorderData(show: false),
@@ -238,9 +238,9 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                                               _glowAnimation.value),
                                           const Color(0xFF00FFA2),
                                         ]
-                                      : const [
-                                          Color(0xFF005F38),
+                                      : [
                                           Color(0xFF00FF94),
+                                          Colors.blue,
                                         ],
                                   begin: Alignment.bottomCenter,
                                   end: Alignment.topCenter,
@@ -258,7 +258,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                                           const Color(0xFFFF1E1E),
                                         ]
                                       : const [
-                                          Color(0xFF5F0000),
+                                          Colors.orange,
                                           Color(0xFFFF4D4D),
                                         ],
                                   begin: Alignment.bottomCenter,

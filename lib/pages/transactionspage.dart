@@ -28,13 +28,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
   String? _selectedBrand;
 
   final Map<String, String> brandLogos = {
+    'Adobe':
+        "https://tse2.mm.bing.net/th/id/OIP.mM9NRRVAHaDQL0nr_pALqwHaFj?cb=12&w=800&h=600&rs=1&pid=ImgDetMain&o=7&rm=3",
     'Amazon': 'https://wallpapercave.com/wp/wp7771222.png',
     'Apple':
         'https://w7.pngwing.com/pngs/589/546/png-transparent-apple-logo-new-york-city-brand-computer-apple-company-computer-logo.png',
     'Direct Deposit':
         'https://www.shutterstock.com/image-vector/building-vector-icon-column-bank-600nw-1930635143.jpg',
     'Disney Plus':
-        "https://newswave25.com/wp-content/uploads/2024/08/%EB%94%94%EC%A6%88%EB%8B%88.jpg",
+        "https://vectorseek.com/wp-content/uploads/2024/03/Disney-2024-Logo-Vector-3-1024x1024.png",
     'DoorDash':
         "https://www.shutterstock.com/image-vector/kerala-india-09082023-doordash-food-600nw-2344891519.jpg",
     'Facebook':
@@ -45,13 +47,20 @@ class _TransactionsPageState extends State<TransactionsPage> {
         'https://e7.pngegg.com/pngimages/43/204/png-clipart-logo-h-m-brand-clothing-logo-hm.png',
     'Instagram':
         'https://img.freepik.com/free-vector/instagram-icon_1057-2227.jpg?semt=ais_hybrid&w=740&q=80',
-    'Interact': 'https://download.logo.wine/logo/Interac/Interac-Logo.wine.png',
+    'Interact':
+        'https://canadianhorsedefencecoalition.org/wp-content/uploads/2021/06/Interac_Brand_2021-1024x1024.png',
     'Loblaws':
         'https://cdn.freebiesupply.com/logos/large/2x/loblaws-logo-png-transparent.png',
     'Lyft':
         "https://play-lh.googleusercontent.com/DSChqzPVvt0F4mGutfwuZNtcpmBIJCYlr-erQ3g41rsNfJkeMYQExxTXB7Wi9MQCOFw",
     'Microsoft':
         'https://static.vecteezy.com/system/resources/previews/014/018/578/non_2x/microsoft-logo-on-transparent-background-free-vector.jpg',
+    'Microsoft Excel':
+        "https://th.bing.com/th/id/OIP.eAB8kM9ESZ8NvW4jN6maSwHaEo?w=289&h=180&c=7&r=0&o=7&cb=12&dpr=2&pid=1.7&rm=3",
+    'Microsoft PowerPoint':
+        "https://drawmill.com/wp-content/uploads/2024/06/powerpoint-circle.png",
+    'Microsoft Word':
+        "https://th.bing.com/th/id/OIP.6c8ogw6RkBNX_MgY7yuIAAHaEo?w=298&h=186&c=7&r=0&o=7&cb=12&dpr=2&pid=1.7&rm=3",
     'MoneyGram':
         'https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/MoneyGram_Logo.svg/2560px-MoneyGram_Logo.svg.png',
     'Netflix': 'https://images3.alphacoders.com/115/1152293.png',

@@ -21,6 +21,7 @@ void main() async {
   // Initialize local DB
   final dbManager = DatabaseManager();
   await dbManager.initialisation();
+  await dbManager.clearDatabase();
 
   // Initialize Firebase
   await Firebase.initializeApp(
