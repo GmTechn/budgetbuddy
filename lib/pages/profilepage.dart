@@ -3,8 +3,10 @@ import 'package:expenses_tracker/components/mybutton.dart';
 import 'package:expenses_tracker/components/mynavbar.dart';
 import 'package:expenses_tracker/components/mytextfield.dart';
 import 'package:expenses_tracker/management/databasemanager.dart';
+import 'package:expenses_tracker/management/sessionmanager.dart';
 import 'package:expenses_tracker/models/usermodel.dart';
 import 'package:expenses_tracker/pages/loginpage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import 'package:image_picker/image_picker.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
   final String email;
@@ -255,10 +258,32 @@ class _ProfilePageState extends State<ProfilePage> {
     if (doCancel == true) await _loadProfile();
   }
 
-  void _logout() {
+  Future<void> _logout() async {
+    try {
+      // Save the last user's info before clearing
+      if (_user != null && _user!.fname != null && _user!.fname!.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('lastUserFname', _user!.fname!);
+        await prefs.setString('lastUserEmail', _user!.email);
+      }
+
+      // Clear session in your local SessionManager
+      await SessionManager.clearCurrentUser();
+
+      // Sign out from Firebase (hybrid)
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      debugPrint("Logout error: $e");
+    }
+
+    if (!mounted) return;
+
+    // Navigate back to login with the stored email
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => LoginPage(email: _user!.email)),
+      MaterialPageRoute(
+        builder: (_) => LoginPage(email: _user?.email ?? ''),
+      ),
     );
   }
 

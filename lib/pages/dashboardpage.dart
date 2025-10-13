@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:expenses_tracker/components/mybutton.dart';
 import 'package:expenses_tracker/components/mycards.dart';
 import 'package:expenses_tracker/components/mynavbar.dart';
 import 'package:expenses_tracker/components/mytransactions.dart';
 import 'package:expenses_tracker/management/databasemanager.dart';
+import 'package:expenses_tracker/management/usersmanager.dart';
 import 'package:expenses_tracker/models/cardmodel.dart';
 import 'package:expenses_tracker/models/transactionmodel.dart';
 import 'package:expenses_tracker/models/usermodel.dart';
@@ -362,19 +364,19 @@ class _DashboardState extends State<Dashboard> {
 
               // const SizedBox(height: 200),
 
-              // 👥 Users Button
-              // MyButton(
-              //   textbutton: 'Users',
-              //   onTap: () {
-              //     Navigator.push(
-              //       context,
-              //       MaterialPageRoute(
-              //           builder: (context) => const ListOfUsers()),
-              //     ).then((_) => _loadAllData());
-              //   },
-              //   buttonHeight: 40,
-              //   buttonWidth: 80,
-              // ),
+              //👥 Users Button
+              MyButton(
+                textbutton: 'Users',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ListOfUsers()),
+                  ).then((_) => _loadAllData());
+                },
+                buttonHeight: 40,
+                buttonWidth: 80,
+              ),
             ],
           ),
         ),
