@@ -46,14 +46,14 @@ class _SignUpPageState extends State<SignUpPage> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-  //local sing in
+  //hybrid sign up function
 
   Future<void> registerUser() async {
-    //local sign in with email and password
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
+    // 1️⃣ Input validation
     if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       showMessage("Please fill in all required fields.");
       return;
@@ -62,96 +62,78 @@ class _SignUpPageState extends State<SignUpPage> {
       showMessage("Passwords do not match.");
       return;
     }
+    if (password.length < 6) {
+      showMessage("Password must be at least 6 characters long.");
+      return;
+    }
     if (!RegExp(r"^[\w\.-]+@[\w\.-]+\.\w+$").hasMatch(email)) {
       showMessage("Please enter a valid email address.");
       return;
     }
 
-    final existingUser = await _dbManager.getUserByEmail(email);
-
-    if (existingUser != null) {
-      showMessage("An account with this email already exists.");
-      return;
-    }
-
-    final newUser = AppUser(
-      fname: '',
-      lname: '',
-      email: email,
-      password: password,
-      phone: '',
-      photoPath: '',
+    // 2️⃣ Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(
+          backgroundColor: Colors.white,
+          valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+          strokeWidth: 5.0,
+        ),
+      ),
     );
 
-    // Save to local DB first
-    await _dbManager.insertAppUser(newUser);
-    await SessionManager.saveCurrentUser(newUser.email);
+    try {
+      // 3️⃣ Firebase registration
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-    // Check internet
-    final connectivity = await Connectivity().checkConnectivity();
-    final isOnline = connectivity != ConnectivityResult.none;
+      final firestore = FirebaseFirestore.instance;
+      await firestore.collection('users').doc(userCredential.user!.uid).set({
+        'uid': userCredential.user!.uid,
+        'email': email,
+        'fname': '',
+        'lname': '',
+        'phone': '',
+        'photoPath': '',
+      }, SetOptions(merge: true));
 
-    if (isOnline) {
-      //Cloud sign in
-      //show circular progression
-      showDialog(
-        context: context,
-        builder: (context) {
-          return const Center(
-            child: CircularProgressIndicator(
-              backgroundColor: Colors.white, // Background color of the track
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                  Colors.green), // Color of the progress arc
-              strokeWidth: 5.0,
-            ),
-          );
-        },
+      // 4️⃣ Local DB insert
+      final newUser = AppUser(
+        fname: '',
+        lname: '',
+        email: email,
+        password: password,
+        phone: '',
+        photoPath: '',
       );
-      try {
-        final userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
+      await _dbManager.insertAppUser(newUser);
 
-        final firestore = FirebaseFirestore.instance;
-        await firestore.collection('users').doc(userCredential.user!.uid).set({
-          'uid': userCredential.user!.uid,
-          'email': email,
-          'fname': '',
-          'lname': '',
-          'phone': '',
-          'photoPath': '',
-        }, SetOptions(merge: true));
+      // 5️⃣ Save session
+      await SessionManager.saveCurrentUser(email);
 
-        // Close progress dialog if still open
-        if (Navigator.canPop(context)) Navigator.pop(context);
-      } on FirebaseAuthException catch (e) {
-        if (Navigator.canPop(context)) Navigator.pop(context);
+      // 6️⃣ Close loading dialog
+      Navigator.pop(context);
 
-        if (e.code == 'email-already-in-use') {
-          showMessage(
-              "This email is already registered. Please log in instead.");
-        } else if (e.code == 'invalid-email') {
-          showMessage("Invalid email format.");
-        } else if (e.code == 'weak-password') {
-          showMessage("Password is too weak. Try adding more characters.");
-        } else {
-          showMessage("Firebase signup failed: ${e.message}");
-        }
-
-        debugPrint("Firebase signup failed [${e.code}]: ${e.message}");
-      } catch (e) {
-        if (Navigator.canPop(context)) Navigator.pop(context);
-        debugPrint("Unexpected signup error: $e");
-        showMessage("Something went wrong. Try again later.");
-      }
+      // 7️⃣ Navigate to ProfilePage
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProfilePage(email: email),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // close loading
+      showMessage("Firebase signup failed: ${e.message}");
+    } catch (e) {
+      Navigator.pop(context); // close loading
+      showMessage("Registration failed: $e");
     }
-
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => ProfilePage(email: newUser.email)),
-    );
   }
 
+//google sign in
   Future<void> signInWithGoogle() async {
     try {
       final account = await _googleSignIn.signIn();

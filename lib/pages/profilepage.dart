@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart'; // <-- added Firestore import
 import 'package:expenses_tracker/components/mybutton.dart';
 import 'package:expenses_tracker/components/mynavbar.dart';
 import 'package:expenses_tracker/components/mytextfield.dart';
@@ -25,7 +26,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Text controllers
   final _fnameController = TextEditingController();
   final _lnameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -38,6 +38,9 @@ class _ProfilePageState extends State<ProfilePage> {
   final _picker = ImagePicker();
   final DatabaseManager _databaseManager = DatabaseManager();
   bool _isLoading = false;
+
+  final FirebaseFirestore _firestore =
+      FirebaseFirestore.instance; // <-- Firestore instance
 
   @override
   void initState() {
@@ -80,12 +83,10 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _isLoading = false);
   }
 
-  // Pick image and copy to app directory
   Future<void> _pickImage(ImageSource source) async {
     try {
       final picked = await _picker.pickImage(source: source, imageQuality: 70);
       if (picked != null) {
-        // Get app document directory
         final appDir = await getApplicationDocumentsDirectory();
         final fileName = path.basename(picked.path);
         final savedImage =
@@ -99,6 +100,12 @@ class _ProfilePageState extends State<ProfilePage> {
         if (_user != null) {
           final updated = _user!.copyWith(photoPath: _photoPath);
           await _databaseManager.upsertAppUser(updated);
+
+          // <-- Update Firestore immediately when picking profile photo
+          await _firestore.collection('users').doc(_user!.id.toString()).set({
+            'photoPath': _photoPath,
+          }, SetOptions(merge: true)); // merge pour créer si non existant
+
           _user = updated;
         }
       }
@@ -152,8 +159,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  /// <-- UPDATED: Now saves to BOTH local DB and Firestore
   Future<void> _updateProfile() async {
     if (_user == null) return;
+
+    setState(() => _isLoading = true); // show spinner
 
     final updated = AppUser(
       id: _user!.id,
@@ -166,9 +176,24 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     try {
+      // 1️⃣ Update local database
       await _databaseManager.upsertAppUser(updated);
+
+      // 2️⃣ Update Firestore (convert id to String)
+      // 2️⃣ Update Firestore (create if not exists)
+      await _firestore.collection('users').doc(_user!.id.toString()).set(
+          {
+            'fname': updated.fname,
+            'lname': updated.lname,
+            'email': updated.email,
+            'phone': updated.phone,
+            'photoPath': updated.photoPath ?? '',
+          },
+          SetOptions(
+              merge: true)); // merge true pour ne pas écraser les autres champs
+
       _user = updated;
-      await _loadProfile();
+      await _loadProfile(); // reload the updated data
 
       if (mounted) {
         showDialog(
@@ -210,6 +235,8 @@ class _ProfilePageState extends State<ProfilePage> {
           SnackBar(content: Text('Update failed: $e')),
         );
       }
+    } finally {
+      setState(() => _isLoading = false); // hide spinner
     }
   }
 
@@ -260,17 +287,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     try {
-      // Save last user's info before clearing
       if (_user != null && _user!.fname != null && _user!.fname!.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('lastUserFname', _user!.fname!);
         await prefs.setString('lastUserEmail', _user!.email);
       }
 
-      // Clear current session
       await SessionManager.clearCurrentUser();
-
-      // Firebase sign out
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       debugPrint("Logout error: $e");
@@ -278,7 +301,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (!mounted) return;
 
-    // Navigate back to login (prefilled with last user's email)
     final prefs = await SharedPreferences.getInstance();
     final lastEmail = prefs.getString('lastUserEmail') ?? '';
 
