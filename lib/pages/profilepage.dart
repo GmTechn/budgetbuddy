@@ -260,17 +260,17 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _logout() async {
     try {
-      // Save the last user's info before clearing
+      // Save last user's info before clearing
       if (_user != null && _user!.fname != null && _user!.fname!.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('lastUserFname', _user!.fname!);
         await prefs.setString('lastUserEmail', _user!.email);
       }
 
-      // Clear session in your local SessionManager
+      // Clear current session
       await SessionManager.clearCurrentUser();
 
-      // Sign out from Firebase (hybrid)
+      // Firebase sign out
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       debugPrint("Logout error: $e");
@@ -278,12 +278,13 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (!mounted) return;
 
-    // Navigate back to login with the stored email
+    // Navigate back to login (prefilled with last user's email)
+    final prefs = await SharedPreferences.getInstance();
+    final lastEmail = prefs.getString('lastUserEmail') ?? '';
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => LoginPage(email: _user?.email ?? ''),
-      ),
+      MaterialPageRoute(builder: (_) => LoginPage(email: lastEmail)),
     );
   }
 

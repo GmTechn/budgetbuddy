@@ -41,11 +41,16 @@ class _LoginPageState extends State<LoginPage> {
   /// Load last logged-in user email and fetch data
   Future<void> _loadCachedUser() async {
     final prefs = await SharedPreferences.getInstance();
-    _cachedEmail = prefs.getString('lastEmail') ?? widget.email;
+    _cachedEmail = prefs.getString('lastUserEmail') ?? widget.email;
+    final cachedName = prefs.getString('lastUserFname') ?? '';
 
     if (_cachedEmail != null && _cachedEmail!.isNotEmpty) {
       final user = await _dbManager.getUserByEmail(_cachedEmail!);
-      if (mounted) setState(() => _user = user);
+      if (mounted) {
+        setState(() {
+          _user = user ?? AppUser(email: _cachedEmail!, fname: cachedName);
+        });
+      }
     }
   }
 

@@ -110,6 +110,7 @@ class _SignUpPageState extends State<SignUpPage> {
       try {
         final userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
+
         final firestore = FirebaseFirestore.instance;
         await firestore.collection('users').doc(userCredential.user!.uid).set({
           'uid': userCredential.user!.uid,
@@ -119,12 +120,28 @@ class _SignUpPageState extends State<SignUpPage> {
           'phone': '',
           'photoPath': '',
         }, SetOptions(merge: true));
+
+        // Close progress dialog if still open
+        if (Navigator.canPop(context)) Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        if (Navigator.canPop(context)) Navigator.pop(context);
+
+        if (e.code == 'email-already-in-use') {
+          showMessage(
+              "This email is already registered. Please log in instead.");
+        } else if (e.code == 'invalid-email') {
+          showMessage("Invalid email format.");
+        } else if (e.code == 'weak-password') {
+          showMessage("Password is too weak. Try adding more characters.");
+        } else {
+          showMessage("Firebase signup failed: ${e.message}");
+        }
+
+        debugPrint("Firebase signup failed [${e.code}]: ${e.message}");
       } catch (e) {
-        //pop the progressin
-        Navigator.pop(context);
-        debugPrint("Firebase signup failed: $e");
-        showMessage(
-            "Signed up locally, but Firebase registration failed. Try again later.");
+        if (Navigator.canPop(context)) Navigator.pop(context);
+        debugPrint("Unexpected signup error: $e");
+        showMessage("Something went wrong. Try again later.");
       }
     }
 
