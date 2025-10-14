@@ -14,31 +14,57 @@ class ChartsPage extends StatefulWidget {
 }
 
 class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
+  //instance of database
   final dbManager = DatabaseManager();
+
+  //list of all the transactions
   List<TransactionModel> _transactions = [];
+
+  //list of grouped transactions to display
+  //transactions by date & type
   Map<DateTime, List<TransactionModel>> grouped = {};
+
+  //date time instance
   DateTime? _selectedDate;
+
+  //filtering transactions
   bool _showFiltered = false;
+
+  //list of listed transactions
   List<TransactionModel> _filteredTransactions = [];
 
+  //animations and glows
+
+  //glow controller
   late AnimationController _glowController;
+
+  //glow animation
   late Animation<double> _glowAnimation;
 
+  //fade controller
   late AnimationController _fadeController;
+
+  //fade animation
   late Animation<double> _fadeAnimation;
+
+  //offset animation
   late Animation<Offset> _slideAnimation;
 
+  //initializing state
   @override
   void initState() {
     super.initState();
     _loadTransactions();
 
+    //controlling the glow
     _glowController =
         AnimationController(vsync: this, duration: const Duration(seconds: 2))
           ..repeat(reverse: true);
     _glowAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
+
+    //controlling the fade
 
     _fadeController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
@@ -50,12 +76,16 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
   }
 
+  //disposing of the contollers contents
+
   @override
   void dispose() {
     _glowController.dispose();
     _fadeController.dispose();
     super.dispose();
   }
+
+  //loading transactions from database
 
   Future<void> _loadTransactions() async {
     final data = await dbManager.getTransactions(widget.email);
@@ -70,15 +100,22 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     });
   }
 
+  ///on Bar tap function that displays daily transactions
+  ///based on the datetime variable
+
   void _onBarTap(DateTime date, bool isIncome) {
     setState(() {
       if (_selectedDate == date && _showFiltered) {
+        ///
         _showFiltered = false;
         _selectedDate = null;
         _filteredTransactions.clear();
         _glowController.stop();
         _fadeController.reverse();
       } else {
+        ///display the filtered transaction
+        ///by setting the date, the filters
+        ///with year,month and day as filters
         _selectedDate = date;
         _filteredTransactions = _transactions
             .where((tx) =>
@@ -94,6 +131,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     });
   }
 
+  ///clear the filters or the selection
   void _clearSelection() {
     setState(() {
       _selectedDate = null;
@@ -103,6 +141,10 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
       _fadeController.reverse();
     });
   }
+
+  ///this generates ticks that depend on the max value of y
+  ///by dividing the max by 5 so the chartsbar won't
+  ///go beyond the screen display
 
   List<double> _generateTicks(double maxY) {
     if (maxY <= 10) return [0, 2, 4, 6, 8, 10];
@@ -116,13 +158,18 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    ///sorting the transactions and grouping them
     final sortedDays = grouped.keys.toList()..sort();
+
+    ///
     final maxTransaction = _transactions.isNotEmpty
         ? _transactions
             .map((t) => t.amount.abs())
             .reduce((a, b) => a > b ? a : b)
         : 100.0;
-    final maxY = maxTransaction * 1.2;
+
+    ///
+    final maxY = maxTransaction * 2;
     final ticks = _generateTicks(maxTransaction);
 
     return Scaffold(
@@ -140,6 +187,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
       ),
       body: GestureDetector(
         onTap: _clearSelection,
+        behavior: HitTestBehavior.translucent,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
