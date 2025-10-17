@@ -103,9 +103,9 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
   ///on Bar tap function that displays daily transactions
   ///based on the datetime variable
 
-  void _onBarTap(DateTime date, bool isIncome) {
+  void _onBarTap(DateTime dateoftransaction, bool isIncome) {
     setState(() {
-      if (_selectedDate == date && _showFiltered) {
+      if (_selectedDate == dateoftransaction && _showFiltered) {
         ///
         _showFiltered = false;
         _selectedDate = null;
@@ -116,12 +116,12 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
         ///display the filtered transaction
         ///by setting the date, the filters
         ///with year,month and day as filters
-        _selectedDate = date;
+        _selectedDate = dateoftransaction;
         _filteredTransactions = _transactions
             .where((tx) =>
-                tx.date.year == date.year &&
-                tx.date.month == date.month &&
-                tx.date.day == date.day &&
+                tx.date.year == dateoftransaction.year &&
+                tx.date.month == dateoftransaction.month &&
+                tx.date.day == dateoftransaction.day &&
                 ((isIncome && tx.amount > 0) || (!isIncome && tx.amount < 0)))
             .toList();
         _showFiltered = true;

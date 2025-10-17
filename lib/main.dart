@@ -23,7 +23,7 @@ void main() async {
   await dbManager.initialisation();
 
   //clearing local database
-  await dbManager.clearDatabase();
+  //await dbManager.clearDatabase();
 
   // Initialize Firebase
   await Firebase.initializeApp(

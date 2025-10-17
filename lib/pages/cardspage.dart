@@ -5,6 +5,7 @@ import 'package:expenses_tracker/components/mynavbar.dart';
 import 'package:expenses_tracker/components/mytextfield.dart';
 import 'package:expenses_tracker/management/databasemanager.dart';
 import 'package:expenses_tracker/models/cardmodel.dart';
+import 'package:expenses_tracker/models/transactionmodel.dart';
 import 'package:expenses_tracker/providers/balanceprovider.dart';
 import 'package:expenses_tracker/providers/notificationprovider.dart';
 import 'package:flutter/cupertino.dart';
@@ -22,15 +23,8 @@ class MyCardsPage extends StatefulWidget {
 }
 
 class _MyCardsPageState extends State<MyCardsPage> {
-//generating database instance
-
   final DatabaseManager _databaseManager = DatabaseManager();
-
-//generating list of cards
-
   List<CardModel> _userCards = [];
-
-//initializing state
 
   @override
   void initState() {
@@ -38,22 +32,18 @@ class _MyCardsPageState extends State<MyCardsPage> {
     _loadCards();
   }
 
-//loading cards from database
   Future<void> _loadCards() async {
     final cards = await _databaseManager.getCards(widget.email);
     setState(() => _userCards = cards);
 
-    // Update provider
     final provider = context.read<BalanceProvider>();
     provider.setCards(cards);
 
-    // Set default card
     if (cards.isNotEmpty) {
       final defaultCard =
           cards.firstWhere((c) => c.isDefault == 1, orElse: () => cards[0]);
       provider.setDefaultCard(defaultCard.id!);
 
-      // Load transactions for each card
       for (var card in cards) {
         final transactions = await _databaseManager.getTransactionsByCard(
             widget.email, card.id!);
@@ -62,14 +52,10 @@ class _MyCardsPageState extends State<MyCardsPage> {
     }
   }
 
-//setting a default card
-
   Future<void> _setDefaultCard(CardModel card) async {
     await _databaseManager.setDefaultCard(widget.email, card.id!);
     await _loadCards();
   }
-
-  //editting a card
 
   void _cardAddEditDialog({CardModel? card}) {
     final TextEditingController amountController =
@@ -87,199 +73,223 @@ class _MyCardsPageState extends State<MyCardsPage> {
     showDialog(
       context: context,
       builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setStateDialog) {
-          return AlertDialog(
-            backgroundColor: const Color(0xff181a1e),
-            title: Text(
-              card == null ? 'Add New Card' : 'Edit Card',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+        return StatefulBuilder(
+          builder: (ctx, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: const Color(0xff181a1e),
+              title: Text(
+                card == null ? 'Add New Card' : 'Edit Card',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                children: [
-                  MyTextFormField(
-                      controller: amountController,
-                      hintText: 'Amount',
+              content: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    MyTextFormField(
+                        controller: amountController,
+                        hintText: 'Amount',
+                        obscureText: false,
+                        leadingIcon: const Icon(CupertinoIcons.money_dollar)),
+                    const SizedBox(height: 10),
+                    MyTextFormField(
+                      controller: cardNumberController,
+                      hintText: 'Card Number',
                       obscureText: false,
-                      leadingIcon: const Icon(CupertinoIcons.money_dollar)),
-                  const SizedBox(height: 10),
-                  MyTextFormField(
-                    controller: cardNumberController,
-                    hintText: 'Card Number',
-                    obscureText: false,
-                    leadingIcon: const Icon(CupertinoIcons.creditcard),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(16),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  MyTextFormField(
-                      controller: expiryController,
-                      hintText: 'Expiry date',
-                      obscureText: false,
-                      leadingIcon: const Icon(CupertinoIcons.calendar)),
-                  const SizedBox(height: 10),
-                  MyTextFormField(
-                      controller: usernameController,
-                      hintText: 'Username',
-                      obscureText: false,
-                      leadingIcon: const Icon(CupertinoIcons.person)),
-                  const SizedBox(height: 20),
-                  const Text('Pick Card Colors:',
-                      style: TextStyle(color: Colors.white70)),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              backgroundColor: const Color(0xff181a1e),
-                              title: const Text(
-                                'Pick First Color',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                      leadingIcon: const Icon(CupertinoIcons.creditcard),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(16),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    MyTextFormField(
+                        controller: expiryController,
+                        hintText: 'Expiry date',
+                        obscureText: false,
+                        leadingIcon: const Icon(CupertinoIcons.calendar)),
+                    const SizedBox(height: 10),
+                    MyTextFormField(
+                        controller: usernameController,
+                        hintText: 'Username',
+                        obscureText: false,
+                        leadingIcon: const Icon(CupertinoIcons.person)),
+                    const SizedBox(height: 20),
+                    const Text('Pick Card Colors:',
+                        style: TextStyle(color: Colors.white70)),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                backgroundColor: const Color(0xff181a1e),
+                                title: const Text(
+                                  'Pick First Color',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
                                 ),
-                              ),
-                              content: BlockPicker(
+                                content: BlockPicker(
                                   pickerColor: color1,
                                   onColorChanged: (c) =>
-                                      setStateDialog(() => color1 = c)),
-                              actions: [
-                                TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: const Text(
-                                      'Ok',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )),
-                              ],
-                            ),
-                          );
-                        },
-                        child:
-                            CircleAvatar(backgroundColor: color1, radius: 20),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              backgroundColor: const Color(0xff181a1e),
-                              title: const Text(
-                                'Pick Second Color',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                      setStateDialog(() => color1 = c),
                                 ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Ok',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold)),
+                                  )
+                                ],
                               ),
-                              content: BlockPicker(
+                            );
+                          },
+                          child:
+                              CircleAvatar(backgroundColor: color1, radius: 20),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => AlertDialog(
+                                backgroundColor: const Color(0xff181a1e),
+                                title: const Text(
+                                  'Pick Second Color',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                content: BlockPicker(
                                   pickerColor: color2,
                                   onColorChanged: (c) =>
-                                      setStateDialog(() => color2 = c)),
-                              actions: [
-                                TextButton(
+                                      setStateDialog(() => color2 = c),
+                                ),
+                                actions: [
+                                  TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: const Text(
-                                      'Ok',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    )),
-                              ],
-                            ),
-                          );
-                        },
-                        child:
-                            CircleAvatar(backgroundColor: color2, radius: 20),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                                    child: const Text('Ok',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold)),
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                          child:
+                              CircleAvatar(backgroundColor: color2, radius: 20),
+                        ),
+                      ],
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      if (amountController.text.isNotEmpty &&
-                          cardNumberController.text.isNotEmpty &&
-                          expiryController.text.isNotEmpty &&
-                          usernameController.text.isNotEmpty) {
-                        final provider = context.read<BalanceProvider>();
-                        final notifProvider =
-                            context.read<NotificationProvider>();
+                  ],
+                ),
+              ),
+              actions: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text("Cancel",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (amountController.text.isNotEmpty &&
+                            cardNumberController.text.isNotEmpty &&
+                            expiryController.text.isNotEmpty &&
+                            usernameController.text.isNotEmpty) {
+                          final provider = context.read<BalanceProvider>();
+                          final notifProvider =
+                              context.read<NotificationProvider>();
 
-                        final newCard = CardModel(
-                          id: card?.id,
-                          email: widget.email,
-                          amount: double.tryParse(amountController.text) ?? 0.0,
-                          cardnumber: cardNumberController.text,
-                          expirydate: expiryController.text,
-                          username: usernameController.text,
-                          colorOne: color1.value,
-                          colorTwo: color2.value,
-                          isDefault: card?.isDefault ?? 0,
-                        );
-
-                        if (card == null) {
-                          await _databaseManager.insertCard(newCard);
-                          notifProvider.addNewCardNotification();
-                        } else {
-                          await _databaseManager.updateCard(newCard);
-                          notifProvider.addCardRemoveNotification(
-                            newCard.cardnumber
-                                .substring(newCard.cardnumber.length - 4),
+                          final newCard = CardModel(
+                            id: card?.id,
+                            email: widget.email,
+                            amount:
+                                double.tryParse(amountController.text) ?? 0.0,
+                            cardnumber: cardNumberController.text,
+                            expirydate: expiryController.text,
+                            username: usernameController.text,
+                            colorOne: color1.value,
+                            colorTwo: color2.value,
+                            isDefault: card?.isDefault ?? 0,
                           );
+
+                          if (card == null) {
+                            await _databaseManager.insertCard(newCard);
+                            notifProvider.addNewCardNotification();
+                          } else {
+                            await _databaseManager.updateCard(newCard);
+                            notifProvider.addCardRemoveNotification(
+                              newCard.cardnumber
+                                  .substring(newCard.cardnumber.length - 4),
+                            );
+                          }
+
+                          if (mounted) Navigator.of(ctx).pop();
+                          await _loadCards();
                         }
-
-                        if (mounted) Navigator.of(ctx).pop();
-                        await _loadCards();
-                      }
-                    },
-                    child: Text(
-                      card == null ? "Add" : "Save",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      },
+                      child: Text(card == null ? "Add" : "Save",
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold)),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          );
-        });
+                  ],
+                ),
+              ],
+            );
+          },
+        );
       },
     );
+  }
+
+  Future<void> _deleteCardAndTransactions(CardModel card) async {
+    //read from balance provider
+    final provider = context.read<BalanceProvider>();
+
+    //read from notifications provider
+    final notifProvider = context.read<NotificationProvider>();
+
+    //default card settings
+    final isDefault = card.id == provider.defaultCardId;
+    if (isDefault) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(
+              'Please set another card as default before deleting this card.')));
+      return;
+    }
+
+    final transactions =
+        await _databaseManager.getTransactionsByCard(widget.email, card.id!);
+
+    for (TransactionModel t in transactions) {
+      await _databaseManager.deleteTransaction(t.id!);
+    }
+
+    await _databaseManager.deleteCard(card.id!);
+
+    provider.removeCard(card.id!);
+    notifProvider.addCardRemoveNotification(
+        card.cardnumber.substring(card.cardnumber.length - 4));
+
+    await _loadCards();
   }
 
   @override
@@ -300,8 +310,7 @@ class _MyCardsPageState extends State<MyCardsPage> {
                 final card = _userCards[i];
                 return Dismissible(
                   key: ValueKey(card.id),
-                  direction:
-                      DismissDirection.endToStart, // slide vers la gauche
+                  direction: DismissDirection.endToStart,
                   background: Container(
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -318,16 +327,13 @@ class _MyCardsPageState extends State<MyCardsPage> {
                           'Confirm',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
                         ),
                         content: const Text(
-                          'Do you want to delete this card?',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
+                          'Do you want to delete this card and all its transactions?',
+                          style: TextStyle(color: Colors.white),
                         ),
                         actions: [
                           Row(
@@ -336,25 +342,19 @@ class _MyCardsPageState extends State<MyCardsPage> {
                               TextButton(
                                 onPressed: () =>
                                     Navigator.of(context).pop(false),
-                                child: const Text(
-                                  'Cancel',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: const Text('Cancel',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
                               ),
                               TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text(
-                                    'Delete',
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: const Text('Delete',
                                     style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )),
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold)),
+                              ),
                             ],
                           ),
                         ],
@@ -362,25 +362,12 @@ class _MyCardsPageState extends State<MyCardsPage> {
                     );
                   },
                   onDismissed: (direction) async {
-                    // ✅ Récupérer les 4 derniers chiffres avant suppression
-                    final last4 =
-                        card.cardnumber.substring(card.cardnumber.length - 4);
-
-                    // ✅ Supprimer la carte de la DB
-                    await _databaseManager.deleteCard(card.id!);
-
-                    // ✅ Supprimer de la liste locale
-                    _userCards.removeAt(i);
-
-                    // ✅ Mettre à jour le provider de solde
-                    final provider = context.read<BalanceProvider>();
-                    provider.setCards(_userCards);
-
-                    // ✅ Ajouter une notification de suppression
-                    final notifProvider = context.read<NotificationProvider>();
-                    notifProvider.addCardRemoveNotification(last4);
+                    await _deleteCardAndTransactions(card);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Card and its transactions deleted!')),
+                    );
                   },
-
                   child: GestureDetector(
                     onTap: () => _cardAddEditDialog(card: card),
                     child: Column(
