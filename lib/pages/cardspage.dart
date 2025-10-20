@@ -299,7 +299,6 @@ class _MyCardsPageState extends State<MyCardsPage> {
                           usernameController.text.isNotEmpty &&
                           (!hasTransactions ||
                               amountController.text.isNotEmpty)) {
-                        final balanceProvider = context.read<BalanceProvider>();
                         final newCard = CardModel(
                           id: card?.id,
                           email: widget.email,

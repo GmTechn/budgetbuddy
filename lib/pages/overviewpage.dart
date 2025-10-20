@@ -14,57 +14,34 @@ class ChartsPage extends StatefulWidget {
 }
 
 class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
-  //instance of database
   final dbManager = DatabaseManager();
-
-  //list of all the transactions
   List<TransactionModel> _transactions = [];
-
-  //list of grouped transactions to display
-  //transactions by date & type
   Map<DateTime, List<TransactionModel>> grouped = {};
-
-  //date time instance
   DateTime? _selectedDate;
-
-  //filtering transactions
   bool _showFiltered = false;
-
-  //list of listed transactions
   List<TransactionModel> _filteredTransactions = [];
 
-  //animations and glows
-
-  //glow controller
+  // animation controllers
   late AnimationController _glowController;
-
-  //glow animation
-  late Animation<double> _glowAnimation;
-
-  //fade controller
   late AnimationController _fadeController;
-
-  //fade animation
+  late Animation<double> _glowAnimation;
   late Animation<double> _fadeAnimation;
-
-  //offset animation
   late Animation<Offset> _slideAnimation;
 
-  //initializing state
+  // filtre actuel
+  String _selectedFilter = "4 recent days";
+
   @override
   void initState() {
     super.initState();
     _loadTransactions();
 
-    //controlling the glow
     _glowController =
         AnimationController(vsync: this, duration: const Duration(seconds: 2))
           ..repeat(reverse: true);
     _glowAnimation = Tween<double>(begin: 0.3, end: 1.0).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
-
-    //controlling the fade
 
     _fadeController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 400));
@@ -76,16 +53,12 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
   }
 
-  //disposing of the contollers contents
-
   @override
   void dispose() {
     _glowController.dispose();
     _fadeController.dispose();
     super.dispose();
   }
-
-  //loading transactions from database
 
   Future<void> _loadTransactions() async {
     final data = await dbManager.getTransactions(widget.email);
@@ -100,22 +73,15 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     });
   }
 
-  ///on Bar tap function that displays daily transactions
-  ///based on the datetime variable
-
   void _onBarTap(DateTime dateoftransaction, bool isIncome) {
     setState(() {
       if (_selectedDate == dateoftransaction && _showFiltered) {
-        ///
         _showFiltered = false;
         _selectedDate = null;
         _filteredTransactions.clear();
         _glowController.stop();
         _fadeController.reverse();
       } else {
-        ///display the filtered transaction
-        ///by setting the date, the filters
-        ///with year,month and day as filters
         _selectedDate = dateoftransaction;
         _filteredTransactions = _transactions
             .where((tx) =>
@@ -131,7 +97,6 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     });
   }
 
-  ///clear the filters or the selection
   void _clearSelection() {
     setState(() {
       _selectedDate = null;
@@ -141,10 +106,6 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
       _fadeController.reverse();
     });
   }
-
-  ///this generates ticks that depend on the max value of y
-  ///by dividing the max by 5 so the chartsbar won't
-  ///go beyond the screen display
 
   List<double> _generateTicks(double maxY) {
     if (maxY <= 10) return [0, 2, 4, 6, 8, 10];
@@ -156,19 +117,26 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
     return List.generate(6, (i) => i * step);
   }
 
+  /// retourne les jours filtrés (4, 7 ou tout)
+  List<DateTime> _getFilteredDays() {
+    final sortedDays = grouped.keys.toList()..sort();
+    if (_selectedFilter == "4 recent days") {
+      return sortedDays.takeLast(4);
+    } else if (_selectedFilter == "7 recent days") {
+      return sortedDays.takeLast(7);
+    } else {
+      return sortedDays;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    ///sorting the transactions and grouping them
-    final sortedDays = grouped.keys.toList()..sort();
-
-    ///
+    final filteredDays = _getFilteredDays();
     final maxTransaction = _transactions.isNotEmpty
         ? _transactions
             .map((t) => t.amount.abs())
             .reduce((a, b) => a > b ? a : b)
         : 100.0;
-
-    ///
     final maxY = maxTransaction * 2;
     final ticks = _generateTicks(maxTransaction);
 
@@ -179,9 +147,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
         backgroundColor: const Color(0xff181a1e),
         title: const Text(
           'O V E R V I E W',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+          style: TextStyle(color: Colors.white),
         ),
         centerTitle: true,
       ),
@@ -192,6 +158,38 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
+              // 🔽 filtre
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  DropdownButton<String>(
+                    dropdownColor: const Color(0xff181a1e),
+                    style: const TextStyle(color: Colors.white70),
+                    value: _selectedFilter,
+                    items: const [
+                      DropdownMenuItem(
+                        value: "4 recent days",
+                        child: Text("4 recent days"),
+                      ),
+                      DropdownMenuItem(
+                        value: "7 recent days",
+                        child: Text("7 recent days"),
+                      ),
+                      // DropdownMenuItem(
+                      //   value: "Tout",
+                      //   child: Text("Tout afficher"),
+                      // ),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedFilter = value!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
               Flexible(
                 flex: 2,
                 child: AnimatedBuilder(
@@ -205,6 +203,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                         gridData: FlGridData(
                             show: true,
                             drawHorizontalLine: true,
+                            drawVerticalLine: false,
                             getDrawingHorizontalLine: (value) {
                               return const FlLine(
                                   color: Colors.white10, strokeWidth: 1);
@@ -215,12 +214,10 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                             if (!event.isInterestedForInteractions ||
                                 response == null ||
                                 response.spot == null) return;
-
                             final idx = response.spot!.touchedBarGroupIndex;
                             final rodIdx = response.spot!.touchedRodDataIndex;
-                            final day = sortedDays[idx];
-                            final isIncome =
-                                rodIdx == 0; // ✅ 0 = income, 1 = expense
+                            final day = filteredDays[idx];
+                            final isIncome = rodIdx == 0;
                             _onBarTap(day, isIncome);
                           },
                         ),
@@ -246,8 +243,8 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                               showTitles: true,
                               getTitlesWidget: (val, _) {
                                 final idx = val.toInt();
-                                if (idx >= 0 && idx < sortedDays.length) {
-                                  final day = sortedDays[idx];
+                                if (idx >= 0 && idx < filteredDays.length) {
+                                  final day = filteredDays[idx];
                                   return Text(
                                     '${day.day}/${day.month}',
                                     style: const TextStyle(
@@ -259,8 +256,8 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-                        barGroups: List.generate(sortedDays.length, (index) {
-                          final day = sortedDays[index];
+                        barGroups: List.generate(filteredDays.length, (index) {
+                          final day = filteredDays[index];
                           final transactions = grouped[day]!;
                           final incomeTotal = transactions
                               .where((tx) => tx.amount > 0)
@@ -273,11 +270,11 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
 
                           return BarChartGroupData(
                             x: index,
-                            barsSpace: 18,
+                            barsSpace: 10,
                             barRods: [
                               BarChartRodData(
                                 toY: incomeTotal,
-                                width: 20,
+                                width: 10,
                                 borderRadius: BorderRadius.circular(12),
                                 gradient: LinearGradient(
                                   colors: isSelected
@@ -286,7 +283,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                                               _glowAnimation.value),
                                           const Color(0xFF00FFA2),
                                         ]
-                                      : [
+                                      : const [
                                           Color(0xFF00FF94),
                                           Colors.blue,
                                         ],
@@ -296,7 +293,7 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                               ),
                               BarChartRodData(
                                 toY: expenseTotal,
-                                width: 20,
+                                width: 10,
                                 borderRadius: BorderRadius.circular(12),
                                 gradient: LinearGradient(
                                   colors: isSelected
@@ -333,36 +330,40 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
                         color: const Color(0xFF141923),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _filteredTransactions.length,
-                        itemBuilder: (context, index) {
-                          final tx = _filteredTransactions[index];
-                          final isIncome = tx.amount > 0;
-                          return ListTile(
-                            leading: Icon(
-                              isIncome
-                                  ? Icons.arrow_downward_rounded
-                                  : Icons.arrow_upward_rounded,
-                              color: isIncome
-                                  ? Colors.greenAccent
-                                  : Colors.redAccent,
-                            ),
-                            title: Text(
-                              tx.place,
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                            trailing: Text(
-                              '${tx.amount > 0 ? '+' : ''}${tx.amount.toStringAsFixed(2)} \$',
-                              style: TextStyle(
-                                color: isIncome
-                                    ? Colors.greenAccent
-                                    : Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          );
-                        },
+                      child: Column(
+                        children: [
+                          ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: _filteredTransactions.length,
+                            itemBuilder: (context, index) {
+                              final tx = _filteredTransactions[index];
+                              final isIncome = tx.amount > 0;
+                              return ListTile(
+                                leading: Icon(
+                                  isIncome
+                                      ? Icons.arrow_downward_rounded
+                                      : Icons.arrow_upward_rounded,
+                                  color: isIncome
+                                      ? Colors.greenAccent
+                                      : Colors.redAccent,
+                                ),
+                                title: Text(
+                                  tx.place,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                                trailing: Text(
+                                  '${tx.amount > 0 ? '+' : ''}${tx.amount.toStringAsFixed(2)} \$',
+                                  style: TextStyle(
+                                    color: isIncome
+                                        ? Colors.greenAccent
+                                        : Colors.redAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -373,4 +374,8 @@ class _ChartsPageState extends State<ChartsPage> with TickerProviderStateMixin {
       ),
     );
   }
+}
+
+extension TakeLastExtension<E> on List<E> {
+  List<E> takeLast(int n) => length <= n ? this : sublist(length - n);
 }
