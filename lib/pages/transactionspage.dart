@@ -19,9 +19,10 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
+  //database manager
   final dbManager = DatabaseManager();
-  final List<TransactionModel> _transactions = [];
 
+  final List<TransactionModel> _transactions = [];
   final _formKey = GlobalKey<FormState>();
   final _placeController = TextEditingController();
   final _amountController = TextEditingController();
@@ -89,6 +90,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
   //appuser instance
   AppUser? _currentUser;
+
+  //state initialization
 
   @override
   void initState() {
@@ -168,6 +171,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                     obscureText: false,
                     validator: (value) =>
                         value!.isEmpty ? "Enter a place" : null,
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   MyTextFormField(
@@ -179,15 +183,21 @@ class _TransactionsPageState extends State<TransactionsPage> {
                         const TextInputType.numberWithOptions(decimal: true),
                     validator: (value) =>
                         value!.isEmpty ? "Enter amount" : null,
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
+                    hint: const Text(
+                      'Select Brand',
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                    ),
                     value: _selectedBrand,
                     items: sortedBrands
                         .map((brand) => DropdownMenuItem(
                               value: brand,
-                              child: Text(brand,
-                                  style: const TextStyle(color: Colors.white)),
+                              child: Text(
+                                brand,
+                              ),
                             ))
                         .toList(),
                     onChanged: (value) =>
@@ -201,8 +211,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       filled: true,
                       prefixIcon: const Icon(CupertinoIcons.tag),
                       prefixIconColor: Colors.white,
-                      hintText: 'Select Brand',
-                      hintStyle: const TextStyle(color: Colors.white),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                           color: Color.fromARGB(255, 40, 43, 50),
@@ -225,6 +233,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
+                    hint: const Text(
+                      'Select Type',
+                      style: TextStyle(color: Colors.white54, fontSize: 16),
+                    ),
                     value: _selectedType,
                     items: const [
                       DropdownMenuItem(
@@ -248,8 +260,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
                       filled: true,
                       prefixIcon: const Icon(CupertinoIcons.arrow_2_circlepath),
                       prefixIconColor: Colors.white,
-                      hintText: 'Select type',
-                      hintStyle: const TextStyle(color: Colors.white),
                       enabledBorder: OutlineInputBorder(
                         borderSide: const BorderSide(
                             color: Color.fromARGB(255, 40, 43, 50)),
@@ -436,12 +446,12 @@ class _TransactionsPageState extends State<TransactionsPage> {
                           child: Dismissible(
                             key: ValueKey(t.id),
                             background: Container(
-                              color: Colors.red,
+                              color: Colors.redAccent.shade700,
                               alignment: Alignment.centerRight,
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 20),
-                              child:
-                                  const Icon(Icons.delete, color: Colors.white),
+                              child: const Icon(CupertinoIcons.trash_fill,
+                                  color: Colors.white),
                             ),
                             direction: DismissDirection.endToStart,
                             onDismissed: (direction) async {

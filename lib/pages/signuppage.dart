@@ -289,6 +289,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 obscureText: false,
                 leadingIcon: const Icon(CupertinoIcons.envelope_fill,
                     color: Colors.white24),
+                enabled: false,
               ),
               const SizedBox(height: 20),
               MyTextFormField(
@@ -307,6 +308,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   onPressed: () =>
                       setState(() => _isPasswordVisible = !_isPasswordVisible),
                 ),
+                enabled: false,
               ),
               const SizedBox(height: 20),
               MyTextFormField(
@@ -325,6 +327,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   onPressed: () =>
                       setState(() => _isPasswordVisible = !_isPasswordVisible),
                 ),
+                enabled: false,
               ),
               const SizedBox(height: 40),
               MyButton(

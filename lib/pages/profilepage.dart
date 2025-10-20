@@ -12,7 +12,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-// ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,27 +25,42 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  //controllers
   final _fnameController = TextEditingController();
   final _lnameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  //file to store image path
   File? _imageFile;
+
+  //string of the photopath
   String? _photoPath;
+
+  //instance of app user
   AppUser? _user;
 
+  //picker instance
   final _picker = ImagePicker();
+
+  //database instance
   final DatabaseManager _databaseManager = DatabaseManager();
+
+  //loading state boolean variable
   bool _isLoading = false;
 
+  //firebase instance
   final FirebaseFirestore _firestore =
       FirebaseFirestore.instance; // <-- Firestore instance
 
+  //state initialization
   @override
   void initState() {
     super.initState();
     _loadProfile();
   }
+
+  //disposing of controllers
 
   @override
   void dispose() {
@@ -56,6 +70,8 @@ class _ProfilePageState extends State<ProfilePage> {
     _phoneController.dispose();
     super.dispose();
   }
+
+  //load profile function
 
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
@@ -72,7 +88,12 @@ class _ProfilePageState extends State<ProfilePage> {
       _emailController.text = user.email ?? widget.email;
       _phoneController.text = user.phone ?? '';
       if (user.photoPath != null && user.photoPath!.isNotEmpty) {
+        //store photopath in file
         final f = File(user.photoPath!);
+
+        //if file exist leave it
+        //else create a path and store the image
+        //in the path
         if (f.existsSync()) {
           _imageFile = f;
           _photoPath = user.photoPath;
@@ -83,6 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => _isLoading = false);
   }
 
+  //image picking function
   Future<void> _pickImage(ImageSource source) async {
     try {
       final picked = await _picker.pickImage(source: source, imageQuality: 70);
@@ -119,23 +141,41 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  //pick image options to pick from 2 sources
   void _showImagePickerOptions() {
     showModalBottomSheet(
+      backgroundColor: const Color.fromARGB(255, 40, 43, 50),
       context: context,
       builder: (_) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(CupertinoIcons.photo_camera_solid),
-              title: const Text('Camera'),
+              leading: const Icon(
+                CupertinoIcons.photo_camera_solid,
+                color: Colors.white70,
+              ),
+              title: const Text(
+                'Camera',
+                style: TextStyle(
+                  color: Colors.white70,
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _pickImage(ImageSource.camera);
               },
             ),
             ListTile(
-              leading: const Icon(CupertinoIcons.photo),
-              title: const Text('Gallery'),
+              leading: const Icon(
+                CupertinoIcons.photo,
+                color: Colors.white70,
+              ),
+              title: const Text(
+                'Gallery',
+                style: TextStyle(
+                  color: Colors.white70,
+                ),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
                 _pickImage(ImageSource.gallery);
@@ -201,6 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
           builder: (_) => AlertDialog(
             backgroundColor: const Color(0xff181a1e),
             title: const Text(
+              textAlign: TextAlign.center,
               'Success',
               style: TextStyle(
                 color: Colors.white,
@@ -209,18 +250,21 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             content: const Text(
+              textAlign: TextAlign.center,
               'Your changes have been saved.',
               style: TextStyle(
                 color: Colors.white,
               ),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(
-                    color: Colors.white,
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -244,7 +288,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final doCancel = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Color(0xff181a1e),
+        backgroundColor: const Color(0xff181a1e),
         title: const Text(
           'Discard changes?',
           style: TextStyle(
@@ -389,6 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   obscureText: false,
                                   leadingIcon:
                                       const Icon(CupertinoIcons.person_fill),
+                                  enabled: false,
                                 ),
                                 const SizedBox(height: 20),
                                 MyTextFormField(
@@ -397,6 +442,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   obscureText: false,
                                   leadingIcon:
                                       const Icon(CupertinoIcons.person_fill),
+                                  enabled: false,
                                 ),
                                 const SizedBox(height: 20),
                                 MyTextFormField(
@@ -405,6 +451,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   obscureText: false,
                                   leadingIcon:
                                       const Icon(CupertinoIcons.mail_solid),
+                                  enabled: false,
                                 ),
                                 const SizedBox(height: 20),
                                 MyTextFormField(
@@ -417,6 +464,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     FilteringTextInputFormatter.digitsOnly,
                                     LengthLimitingTextInputFormatter(10),
                                   ],
+                                  enabled: false,
                                 ),
                                 const SizedBox(height: 40),
                                 Row(

@@ -164,6 +164,7 @@ class _ListOfUsersState extends State<ListOfUsers> {
                       CupertinoIcons.person_fill,
                       color: Colors.white70,
                     ),
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   MyTextFormField(
@@ -174,6 +175,7 @@ class _ListOfUsersState extends State<ListOfUsers> {
                       CupertinoIcons.person_fill,
                       color: Colors.white70,
                     ),
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   MyTextFormField(
@@ -184,6 +186,7 @@ class _ListOfUsersState extends State<ListOfUsers> {
                       CupertinoIcons.mail_solid,
                       color: Colors.white70,
                     ),
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   MyTextFormField(
@@ -207,6 +210,7 @@ class _ListOfUsersState extends State<ListOfUsers> {
                         });
                       },
                     ),
+                    enabled: false,
                   ),
                   const SizedBox(height: 10),
                   MyTextFormField(
@@ -221,6 +225,7 @@ class _ListOfUsersState extends State<ListOfUsers> {
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(10),
                     ],
+                    enabled: false,
                   ),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:expenses_tracker/components/mybutton.dart';
+import 'package:expenses_tracker/models/notificationmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,46 @@ class NotificationsPage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final n = notifications[index];
 
+                      // 🎨 Choose colors based on notification type
+                      Color startColor;
+                      Color endColor;
+
+                      switch (n.type) {
+                        case NotificationType.lowBalance:
+                          startColor = const Color(0xff8B0000); // dark red
+                          endColor = const Color(0xffB22222); // lighter red
+                          break;
+
+                        case NotificationType.highExpense:
+                          startColor = const Color(0xffB8860B); // golden brown
+                          endColor = const Color(0xffDAA520);
+                          break;
+                        // case NotificationType.newCard:
+                        //   startColor = const Color(0xff006994); // blue
+                        //   endColor = const Color(0xff00BFFF);
+                        //   glowColor = Colors.blueAccent;
+                        //   break;
+                        // case NotificationType.cardUpdated:
+                        //   startColor = const Color(0xff4B0082); // indigo
+                        //   endColor = const Color(0xff8A2BE2);
+                        //   glowColor = Colors.purpleAccent;
+                        //   break;
+                        // case NotificationType.cardRemoved:
+                        //   startColor = const Color(0xff5A5A5A); // gray
+                        //   endColor = const Color(0xff2F4F4F);
+                        //   glowColor = Colors.grey;
+                        //   break;
+                        // case NotificationType.system:
+                        //   startColor = const Color(0xff2F4F4F);
+                        //   endColor = const Color(0xff708090);
+                        //   glowColor = Colors.cyanAccent;
+                        //   break;
+                        default:
+                          startColor = const Color.fromARGB(
+                              255, 44, 101, 46); // dark green
+                          endColor = Colors.green; // light green
+                      }
+
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: Dismissible(
@@ -74,20 +115,19 @@ class NotificationsPage extends StatelessWidget {
                               gradient: LinearGradient(
                                 colors: n.read
                                     ? [
-                                        const Color(0xff2a2b30),
-                                        const Color(0xff1d1e22)
+                                        startColor =
+                                            Color.fromARGB(255, 35, 37, 46),
+                                        endColor =
+                                            Color.fromARGB(255, 35, 37, 46),
                                       ]
-                                    : [
-                                        const Color.fromARGB(255, 55, 130, 58),
-                                        Colors.green,
-                                      ],
+                                    : [startColor, endColor],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               boxShadow: [
                                 if (!n.read)
-                                  BoxShadow(
-                                    color: Colors.green.withOpacity(0.4),
+                                  const BoxShadow(
+                                    //color: glowColor.withOpacity(0.5),
                                     blurRadius: 8,
                                     spreadRadius: 2,
                                   ),
@@ -146,7 +186,7 @@ class NotificationsPage extends StatelessWidget {
                         return const AlertDialog(
                           backgroundColor: Color(0xff181a1e),
                           content: Text(
-                            "You're all caught up!",
+                            "You're all caught up!\nYou have read all the notifications.",
                             style: TextStyle(color: Colors.white),
                             textAlign: TextAlign.center,
                           ),

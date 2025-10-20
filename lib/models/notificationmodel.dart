@@ -8,6 +8,7 @@ enum NotificationType {
   balanceUpdated, // When balance changes significantly
   cardRemoved, // When a card is deleted
   lowBalance, // calculating low balance for treshold
+  cardUpdated, // updating card details
 }
 
 class AppNotification {

@@ -9,6 +9,7 @@ class CardModel {
   final int colorOne;
   final int colorTwo;
   final int isDefault;
+  DateTime? expiryDate; // new field
 
   CardModel({
     this.id,

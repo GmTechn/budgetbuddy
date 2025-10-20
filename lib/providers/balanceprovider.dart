@@ -51,26 +51,20 @@ class BalanceProvider extends ChangeNotifier {
   }
 
   //removing a card and its related transactions
-  // ---- REMOVE CARD ----
+  // ---- REMOVE CARD ---- //
   void removeCard(int cardId) {
-    // Vérifier si la carte est celle par défaut
-    // if (_defaultCardId == cardId) {
-    //   // Ne pas supprimer la carte par défaut
-    //   throw Exception(
-    //       "Please set another card as default before deleting this one.");
-    // }
-
-    // Supprimer la carte de la liste
-    _cards.removeWhere((c) => c.id == cardId);
-
-    // Supprimer aussi les transactions liées
-    _cardTransactions.remove(cardId);
-
-    notifyListeners();
-    //return true;
+    // Prevent deleting the default card
+    if (_defaultCardId == cardId) {
+      debugPrint("Attempted to delete default card ($cardId) — blocked.");
+      return;
+    } else {
+      _cards.removeWhere((c) => c.id == cardId);
+      _cardTransactions.remove(cardId);
+      notifyListeners();
+    }
   }
 
-//giving a specific card , it's specific transactions
+  //giving a specific card , it's specific transactions
 
   void setTransactionsForCard(int cardId, List<TransactionModel> transactions) {
     _cardTransactions[cardId] = transactions;

@@ -24,11 +24,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  //controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  //boolean for password visibility
   bool _isPasswordVisible = false;
 
+  //database manager
   final DatabaseManager _dbManager = DatabaseManager();
+
   AppUser? _user;
   String? _cachedEmail;
 
@@ -251,6 +256,7 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: false,
                   leadingIcon: const Icon(CupertinoIcons.envelope_fill,
                       color: Colors.white24),
+                  enabled: false,
                 ),
                 const SizedBox(height: 20),
                 MyTextFormField(
@@ -259,6 +265,7 @@ class _LoginPageState extends State<LoginPage> {
                   obscureText: !_isPasswordVisible,
                   leadingIcon: const Icon(CupertinoIcons.lock_fill,
                       color: Colors.white24),
+                  enabled: false,
                 ),
                 const SizedBox(height: 10),
                 Row(

@@ -41,6 +41,7 @@ class NotificationProvider extends ChangeNotifier {
 
   // ---- Transaction Notifications ----
 
+  //adding income
   void addIncomeNotification(double amount) {
     addNotification(
       AppNotification.create(
@@ -52,16 +53,18 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
+  //adding high income
   void addHighIncomeNotification(double amount) {
     addNotification(
       AppNotification.create(
-        title: "High income alert!",
+        title: "⚠️High income alert!",
         description: "High income recorded - \$${amount.toStringAsFixed(2)}!",
         type: NotificationType.highExpense,
       ),
     );
   }
 
+  //adding expense notification
   void addExpenseNotification(double amount, String place) {
     addNotification(
       AppNotification.create(
@@ -73,10 +76,11 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
+  //adding low balance notification
   void addLowBalanceNotification(double currentBalance, double threshold) {
     addNotification(
       AppNotification.create(
-        title: "Low balance warning!",
+        title: "⚠️Low balance warning!",
         description:
             "Your balance is low: \$${currentBalance.toStringAsFixed(2)} (below threshold \$${threshold.toStringAsFixed(2)}).",
         type: NotificationType.lowBalance,
@@ -84,8 +88,8 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
-  // ---- Card Notifications ----
-
+  // ---- Card Notifications ---- //
+  //adding a new card
   void addNewCardNotification() {
     addNotification(
       AppNotification(
@@ -98,6 +102,7 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
+  //removing card notification
   void addCardRemoveNotification(String last4) {
     addNotification(
       AppNotification(
@@ -105,6 +110,19 @@ class NotificationProvider extends ChangeNotifier {
         title: 'Card removed successfully',
         description: 'Your card ending in ****$last4 has been deleted.',
         type: NotificationType.cardRemoved,
+        date: DateTime.now(),
+      ),
+    );
+  }
+
+  //updating card notification
+  void addCardUpdatedNotification(String last4) {
+    addNotification(
+      AppNotification(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        title: 'Card updated successfully',
+        description: 'Your card ending in ****$last4 has been updated.',
+        type: NotificationType.cardUpdated, // new type
         date: DateTime.now(),
       ),
     );

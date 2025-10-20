@@ -74,6 +74,7 @@ class ForgotPasswordPage extends StatelessWidget {
                 CupertinoIcons.envelope_fill,
                 color: Colors.white70,
               ),
+              enabled: false,
             ),
             const SizedBox(height: 40),
             MyButton(

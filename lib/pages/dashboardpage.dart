@@ -9,6 +9,7 @@ import 'package:expenses_tracker/models/cardmodel.dart';
 import 'package:expenses_tracker/models/transactionmodel.dart';
 import 'package:expenses_tracker/models/usermodel.dart';
 import 'package:expenses_tracker/pages/notificationspage.dart';
+import 'package:expenses_tracker/pages/overviewpage.dart';
 import 'package:expenses_tracker/pages/profilepage.dart';
 import 'package:expenses_tracker/providers/balanceprovider.dart';
 
@@ -223,8 +224,8 @@ class _DashboardState extends State<Dashboard> {
                                 ? "${_currentUser!.fname} ${_currentUser!.lname}!"
                                 : "Guest!",
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
                               color: Colors.white,
                             ),
                           ),
@@ -289,7 +290,13 @@ class _DashboardState extends State<Dashboard> {
                   Column(
                     children: [
                       FloatingActionButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChartsPage(email: widget.email)));
+                        },
                         heroTag: "income",
                         backgroundColor: Colors.green,
                         child: const Icon(
@@ -310,7 +317,13 @@ class _DashboardState extends State<Dashboard> {
                   Column(
                     children: [
                       FloatingActionButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChartsPage(email: widget.email)));
+                        },
                         heroTag: "expense",
                         backgroundColor: Colors.red,
                         child: const Icon(

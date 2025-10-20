@@ -17,6 +17,7 @@ class MyTextFormField extends StatelessWidget {
     this.onFieldSubmitted,
     this.readOnly = false,
     this.onTap,
+    required bool enabled,
   });
 
   final TextEditingController controller;
